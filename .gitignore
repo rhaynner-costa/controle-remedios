@@ -1,0 +1,54 @@
+# Dependências
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# Builds Nativos e Pacotes Gerados
+*.apk
+*.aab
+*.ipa
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+ios/Pods/
+ios/build/
+
+# Chaves, Certificados e Assinaturas
+*.jks
+*.p8
+*.p12
+*.key
+*.keystore
+*.mobileprovision
+*.pem
+
+# Metro / Bundler / TypeScript
+.metro-health-check*
+*.tsbuildinfo
+*.jsbundle
+
+# Logs e Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# Variáveis de Ambiente
+.env
+.env.*
+!.env.example
+
+# Sistema Operacional e IDEs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.hprof
+*.orig.*

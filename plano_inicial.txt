@@ -1,0 +1,27 @@
+Quero criar um app para me lembrar me de medicamentos a serem tomados. 
+
+o add nao precisa de login mas somente um cadastro simples de um usuario.
+
+funcionalidade:
+    Cadastrp de medicamentos :
+        com nome comcercial , principio ativo, dosagem , tipo: comprimiedo, capsula , liquido e etc. 
+        O cadastro deve ter status, ativo, inativo ou arquivado, caso o usuario termine de tromar o remedio ou caso ele rpecise voltar. 
+        Registros nao vao ser excluidos, somente a logica, desse cadastros com data fim e data inicial 
+        Foto da caixa 
+        Se form comprimido uma biblioteca de selecao Selecao de cores e formatos conforme a cor do comprimi
+
+    Cadastrar forma de tomar :
+        Cadastras a dosagem, recorrencia, hora e minutos. 
+        Cadarar quantas ocorrencias vamos ter desse medicamento ou se ele é continuo
+        Quando o medicamento  for tomado marcar ele como tomado. 
+        
+    Lembretes
+        O app deve lembra o usuario do momento de tomar o medicamento 
+
+Tecnologia
+    Deve ser totalmente offline 
+    Deve usar banco de daddos 
+    Deve ser feito react 
+    
+
+    
