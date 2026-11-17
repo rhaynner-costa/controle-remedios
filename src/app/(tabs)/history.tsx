@@ -103,7 +103,10 @@ export default function HistoryScreen() {
         renderItem={({ item }) => {
           const isTaken = item.doseLog.status === 'tomado';
           return (
-            <View className="bg-white border border-slate-200 rounded-2xl p-4 mb-2.5 flex-row items-center">
+            <View
+              testID={`history-item-${item.doseLog.id}`}
+              className="bg-white border border-slate-200 rounded-2xl p-4 mb-2.5 flex-row items-center"
+            >
               <View className="mr-3">
                 <PillIcon
                   shape={item.medication.pillShape}

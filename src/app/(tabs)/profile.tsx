@@ -127,6 +127,7 @@ export default function ProfileScreen() {
           Nome *
         </Text>
         <TextInput
+          testID="profile-input-name"
           value={name}
           onChangeText={setName}
           placeholder="Seu nome"
@@ -137,6 +138,7 @@ export default function ProfileScreen() {
           Data de Nascimento
         </Text>
         <TextInput
+          testID="profile-input-birth-date"
           value={birthDate}
           onChangeText={(v) => setBirthDate(formatBirthDateMask(v))}
           keyboardType="number-pad"
@@ -149,6 +151,7 @@ export default function ProfileScreen() {
           Observações / Alergias
         </Text>
         <TextInput
+          testID="profile-input-health-notes"
           value={healthNotes}
           onChangeText={setHealthNotes}
           placeholder="Alergias, condições de saúde..."
@@ -159,6 +162,7 @@ export default function ProfileScreen() {
         />
 
         <TouchableOpacity
+          testID="profile-btn-save"
           disabled={saving}
           onPress={handleSave}
           className="flex-row items-center justify-center bg-blue-600 py-3 rounded-xl"
@@ -182,6 +186,7 @@ export default function ProfileScreen() {
 
         <View className="gap-2.5">
           <TouchableOpacity
+            testID="profile-btn-export-db"
             disabled={processingBackup}
             onPress={handleExportDb}
             className="flex-row items-center justify-center bg-slate-800 py-3 px-4 rounded-xl"
@@ -193,6 +198,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            testID="profile-btn-import-db"
             disabled={processingBackup}
             onPress={handleImportDb}
             className="flex-row items-center justify-center bg-emerald-50 border border-emerald-300 py-3 px-4 rounded-xl mt-1"

@@ -68,6 +68,7 @@ export function PillAppearancePicker({
           return (
             <TouchableOpacity
               key={item.value}
+              testID={`pill-shape-${item.value}`}
               onPress={() => onChangeShape(item.value)}
               className={`flex-row items-center px-3 py-2 rounded-xl border ${
                 isSelected
@@ -102,6 +103,7 @@ export function PillAppearancePicker({
           return (
             <TouchableOpacity
               key={`primary-${c.hex}`}
+              testID={`pill-color-primary-${c.hex}`}
               onPress={() => onChangePrimaryColor(c.hex)}
               accessibilityLabel={`Cor principal ${c.name}`}
               className={`w-9 h-9 rounded-full items-center justify-center border-2 ${
@@ -128,6 +130,7 @@ export function PillAppearancePicker({
               return (
                 <TouchableOpacity
                   key={`secondary-${c.hex}`}
+                  testID={`pill-color-secondary-${c.hex}`}
                   onPress={() => onChangeSecondaryColor(c.hex)}
                   accessibilityLabel={`Cor secundária ${c.name}`}
                   className={`w-9 h-9 rounded-full items-center justify-center border-2 ${

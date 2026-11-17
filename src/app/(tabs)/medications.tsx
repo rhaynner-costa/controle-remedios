@@ -61,6 +61,7 @@ export default function MedicationsScreen() {
           return (
             <TouchableOpacity
               key={tab.id}
+              testID={`medications-filter-${tab.id}`}
               onPress={() => setFilter(tab.id)}
               className={`flex-1 py-2 rounded-lg items-center ${
                 active ? 'bg-blue-600' : 'bg-transparent'
@@ -105,6 +106,7 @@ export default function MedicationsScreen() {
       />
 
       <TouchableOpacity
+        testID="medications-fab-new"
         onPress={() => router.push('/medication/new')}
         className="absolute bottom-5 right-5 flex-row items-center bg-blue-600 px-4 py-3.5 rounded-full shadow"
       >

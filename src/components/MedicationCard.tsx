@@ -46,6 +46,7 @@ export function MedicationCard({ medication, onPress }: MedicationCardProps) {
 
   return (
     <TouchableOpacity
+      testID={`medication-card-${medication.id}`}
       activeOpacity={0.8}
       onPress={() => onPress(medication.id)}
       className="bg-white border border-slate-200 rounded-2xl p-4 mb-3 flex-row items-center"

@@ -222,7 +222,10 @@ export default function TodayScreen() {
       {/* Cabeçalho e Saudação */}
       <View className="flex-row items-center justify-between mb-4">
         <View>
-          <Text className="text-xs font-medium text-slate-500">
+          <Text
+            testID="today-greeting-text"
+            className="text-xs font-medium text-slate-500"
+          >
             Olá, {userName || 'Usuário'}
           </Text>
           <Text className="text-xl font-bold text-slate-900">
@@ -230,6 +233,7 @@ export default function TodayScreen() {
           </Text>
         </View>
         <TouchableOpacity
+          testID="today-btn-new-medication"
           onPress={() => router.push('/medication/new')}
           className="flex-row items-center bg-blue-600 px-3.5 py-2.5 rounded-xl"
         >
@@ -243,6 +247,7 @@ export default function TodayScreen() {
       {/* Navegador de Data */}
       <View className="flex-row items-center justify-between bg-white border border-slate-200 rounded-2xl p-3 mb-4">
         <TouchableOpacity
+          testID="today-btn-prev-date"
           onPress={() => setSelectedDate((d) => shiftDateString(d, -1))}
           className="p-2 rounded-lg bg-slate-100"
         >
@@ -250,6 +255,7 @@ export default function TodayScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="today-btn-reset-date"
           onPress={() => setSelectedDate(getLocalDateString())}
           className="items-center"
         >
@@ -267,6 +273,7 @@ export default function TodayScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="today-btn-next-date"
           onPress={() => setSelectedDate((d) => shiftDateString(d, 1))}
           className="p-2 rounded-lg bg-slate-100"
         >
@@ -276,7 +283,10 @@ export default function TodayScreen() {
 
       {/* Resumo de Progresso do Dia */}
       {totalDoses > 0 && (
-        <View className="bg-blue-600 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+        <View
+          testID="today-progress-summary"
+          className="bg-blue-600 rounded-2xl p-4 mb-4 flex-row items-center justify-between"
+        >
           <View>
             <Text className="text-xs font-medium text-blue-100">
               Progresso do dia
@@ -317,6 +327,7 @@ export default function TodayScreen() {
               suas tomadas diárias.
             </Text>
             <TouchableOpacity
+              testID="today-empty-btn-new-medication"
               onPress={() => router.push('/medication/new')}
               className="bg-blue-600 px-4 py-2.5 rounded-xl"
             >
@@ -345,6 +356,7 @@ export default function TodayScreen() {
                 Registrar Tomada
               </Text>
               <TouchableOpacity
+                testID="dose-modal-btn-close"
                 onPress={handleCloseModal}
                 className="p-1.5 rounded-lg bg-slate-100"
               >
@@ -372,6 +384,7 @@ export default function TodayScreen() {
                   <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-xl px-3 py-2">
                     <Calendar size={16} color="#475569" />
                     <TextInput
+                      testID="dose-modal-input-day"
                       value={modalDay}
                       onChangeText={(t) =>
                         setModalDay(t.replace(/\D/g, '').slice(0, 2))
@@ -393,6 +406,7 @@ export default function TodayScreen() {
                   <Text className="text-lg font-bold text-slate-700">/</Text>
                   <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-xl px-3 py-2">
                     <TextInput
+                      testID="dose-modal-input-month"
                       value={modalMonth}
                       onChangeText={(t) =>
                         setModalMonth(t.replace(/\D/g, '').slice(0, 2))
@@ -414,6 +428,7 @@ export default function TodayScreen() {
                   <Text className="text-lg font-bold text-slate-700">/</Text>
                   <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-xl px-3 py-2">
                     <TextInput
+                      testID="dose-modal-input-year"
                       value={modalYear}
                       onChangeText={(t) =>
                         setModalYear(t.replace(/\D/g, '').slice(0, 4))
@@ -434,6 +449,7 @@ export default function TodayScreen() {
                   <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-xl px-3 py-2">
                     <Clock size={16} color="#475569" />
                     <TextInput
+                      testID="dose-modal-input-hour"
                       value={modalHour}
                       onChangeText={(t) =>
                         setModalHour(t.replace(/\D/g, '').slice(0, 2))
@@ -455,6 +471,7 @@ export default function TodayScreen() {
                   <Text className="text-lg font-bold text-slate-700">:</Text>
                   <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-xl px-3 py-2">
                     <TextInput
+                      testID="dose-modal-input-minute"
                       value={modalMinute}
                       onChangeText={(t) =>
                         setModalMinute(t.replace(/\D/g, '').slice(0, 2))
@@ -476,6 +493,7 @@ export default function TodayScreen() {
                 </View>
 
                 <TouchableOpacity
+                  testID="dose-modal-btn-confirm"
                   onPress={handleConfirmTakeFromModal}
                   className="flex-row items-center justify-center bg-emerald-600 py-3.5 rounded-xl mb-2"
                 >
@@ -489,6 +507,7 @@ export default function TodayScreen() {
 
                 {activeItem.doseLog.status !== 'pendente' && (
                   <TouchableOpacity
+                    testID="dose-modal-btn-revert"
                     onPress={handleRevertFromModal}
                     className="flex-row items-center justify-center bg-slate-100 border border-slate-300 py-3 rounded-xl mt-1"
                   >
