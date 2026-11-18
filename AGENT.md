@@ -30,3 +30,6 @@ Sempre que o usuário humano solicitar uma nova feature, alteração ou correç�
 - Não deve sobrescrever regras de negócio sem confirmação explícita.
 - Não deve usar bibliotecas de terceiros desnecessárias ou obsoletas.
 - Não deve enviar trechos de código incompletos com comentários do tipo `// adicione a lógica aqui`, a menos que instruída a criar apenas um esqueleto (boilerplate).
+- Se não conseguir ou não souber, pare e me avise. Não mexa no que já funciona só para uma parte rodar.
+- Mude só o necessário para a tarefa. Quer refatorar algo? Pergunte antes.
+- Siga as pastas, os nomes e as bibliotecas que o projeto já usa. Só instale novas dependências após a minha autorização.
