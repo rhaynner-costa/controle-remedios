@@ -75,6 +75,7 @@ export default function OnboardingScreen() {
               Seu Nome *
             </Text>
             <TextInput
+              testID="onboarding-input-name"
               value={name}
               onChangeText={setName}
               placeholder="Ex: Maria Silva"
@@ -85,6 +86,7 @@ export default function OnboardingScreen() {
               Data de Nascimento (Opcional)
             </Text>
             <TextInput
+              testID="onboarding-input-birth-date"
               value={birthDate}
               onChangeText={(v) => setBirthDate(formatBirthDateMask(v))}
               keyboardType="number-pad"
@@ -97,6 +99,7 @@ export default function OnboardingScreen() {
               Alergias ou Observações (Opcional)
             </Text>
             <TextInput
+              testID="onboarding-input-health-notes"
               value={healthNotes}
               onChangeText={setHealthNotes}
               placeholder="Ex: Alergia a dipirona, hipertensão..."
@@ -108,6 +111,7 @@ export default function OnboardingScreen() {
           </View>
 
           <TouchableOpacity
+            testID="onboarding-btn-continue"
             disabled={saving}
             onPress={handleContinue}
             className={`flex-row items-center justify-center py-4 rounded-xl ${

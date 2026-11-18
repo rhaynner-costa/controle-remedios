@@ -185,6 +185,7 @@ export default function NewMedicationScreen() {
             Nome Comercial *
           </Text>
           <TextInput
+            testID="med-new-input-commercial-name"
             value={commercialName}
             onChangeText={setCommercialName}
             placeholder="Ex: Novalgina, Tylenol, Amoxil"
@@ -195,6 +196,7 @@ export default function NewMedicationScreen() {
             Princípio Ativo *
           </Text>
           <TextInput
+            testID="med-new-input-active-ingredient"
             value={activeIngredient}
             onChangeText={setActiveIngredient}
             placeholder="Ex: Dipirona Monoidratada, Paracetamol"
@@ -205,6 +207,7 @@ export default function NewMedicationScreen() {
             Dosagem / Concentração *
           </Text>
           <TextInput
+            testID="med-new-input-concentration"
             value={concentration}
             onChangeText={setConcentration}
             placeholder="Ex: 500mg, 1g, 50mg/ml"
@@ -220,6 +223,7 @@ export default function NewMedicationScreen() {
               return (
                 <TouchableOpacity
                   key={t}
+                  testID={`med-new-type-${t}`}
                   onPress={() => handleSelectType(t)}
                   className={`px-3.5 py-2 rounded-xl border ${
                     selected
@@ -267,6 +271,7 @@ export default function NewMedicationScreen() {
                 resizeMode="cover"
               />
               <TouchableOpacity
+                testID="med-new-btn-remove-photo"
                 onPress={() => setBoxPhotoBase64(null)}
                 className="flex-row items-center bg-red-50 border border-red-200 px-3.5 py-2 rounded-xl"
               >
@@ -279,6 +284,7 @@ export default function NewMedicationScreen() {
           ) : (
             <View className="flex-row gap-3">
               <TouchableOpacity
+                testID="med-new-btn-camera"
                 onPress={handleCameraPhoto}
                 className="flex-1 flex-row items-center justify-center bg-slate-100 border border-slate-300 py-3 rounded-xl"
               >
@@ -289,6 +295,7 @@ export default function NewMedicationScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
+                testID="med-new-btn-gallery"
                 onPress={handleGalleryPhoto}
                 className="flex-1 flex-row items-center justify-center bg-slate-100 border border-slate-300 py-3 rounded-xl"
               >
@@ -306,6 +313,7 @@ export default function NewMedicationScreen() {
 
         {/* Botão Salvar */}
         <TouchableOpacity
+          testID="med-new-btn-save"
           disabled={saving}
           onPress={handleSave}
           className={`flex-row items-center justify-center py-4 rounded-2xl ${

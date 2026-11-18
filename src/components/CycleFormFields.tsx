@@ -86,6 +86,7 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
         Dosagem por tomada *
       </Text>
       <TextInput
+        testID="cycle-input-dose-amount"
         value={value.doseAmount}
         onChangeText={(t) => updateField('doseAmount', t)}
         placeholder="Ex: 1 comprimido, 20 gotas, 10 ml"
@@ -99,6 +100,7 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
       <View className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-4">
         <View className="flex-row items-center gap-2">
           <TextInput
+            testID="cycle-input-hour"
             value={newTimeHour}
             onChangeText={(t) =>
               setNewTimeHour(t.replace(/\D/g, '').slice(0, 2))
@@ -112,6 +114,7 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
           />
           <Text className="font-bold text-slate-700">:</Text>
           <TextInput
+            testID="cycle-input-minute"
             value={newTimeMinute}
             onChangeText={(t) =>
               setNewTimeMinute(t.replace(/\D/g, '').slice(0, 2))
@@ -124,6 +127,7 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
             className="w-14 bg-white border border-slate-300 rounded-lg py-1.5 text-center font-bold text-slate-900"
           />
           <TouchableOpacity
+            testID="cycle-btn-add-time"
             onPress={handleAddFixedTime}
             className="flex-row items-center bg-blue-600 px-3 py-2 rounded-lg"
           >
@@ -144,7 +148,10 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
                 <Text className="text-sm font-bold text-slate-800 mr-2">
                   {time}
                 </Text>
-                <TouchableOpacity onPress={() => handleRemoveFixedTime(time)}>
+                <TouchableOpacity
+                  testID={`cycle-btn-remove-time-${time}`}
+                  onPress={() => handleRemoveFixedTime(time)}
+                >
                   <Trash2 size={14} color="#EF4444" />
                 </TouchableOpacity>
               </View>
@@ -159,6 +166,7 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
       </Text>
       <View className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
         <TextInput
+          testID="cycle-input-target-occurrences"
           value={value.targetOccurrences}
           onChangeText={(t) =>
             updateField('targetOccurrences', t.replace(/\D/g, ''))

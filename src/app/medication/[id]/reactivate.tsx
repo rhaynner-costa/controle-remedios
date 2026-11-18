@@ -117,6 +117,7 @@ export default function ReactivateMedicationScreen() {
       <CycleFormFields value={cycleForm} onChange={setCycleForm} />
 
       <TouchableOpacity
+        testID="med-reactivate-btn-confirm"
         disabled={saving}
         onPress={handleReactivate}
         className={`flex-row items-center justify-center py-4 rounded-2xl ${

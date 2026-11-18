@@ -110,6 +110,7 @@ export function DoseCard({
         {...(isPending ? panResponder.panHandlers : {})}
       >
         <TouchableOpacity
+          testID={`dose-card-${doseLog.id}`}
           activeOpacity={0.85}
           onPress={() => onPress(item)}
           className={`rounded-2xl p-4 border ${
@@ -180,19 +181,28 @@ export function DoseCard({
                 </Text>
 
                 {isTaken && doseLog.takenAt && (
-                  <Text className="text-xs font-semibold text-emerald-700 mt-1">
+                  <Text
+                    testID={`dose-card-status-${doseLog.id}`}
+                    className="text-xs font-semibold text-emerald-700 mt-1"
+                  >
                     ✓ Tomado em {formatDateTimeDisplay(doseLog.takenAt)}
                   </Text>
                 )}
 
                 {isSkipped && (
-                  <Text className="text-xs font-semibold text-amber-700 mt-1">
+                  <Text
+                    testID={`dose-card-status-${doseLog.id}`}
+                    className="text-xs font-semibold text-amber-700 mt-1"
+                  >
                     Dose pulada (toque para editar ou desfazer)
                   </Text>
                 )}
 
                 {isPending && doseLog.snoozedUntil && (
-                  <Text className="text-xs font-medium text-blue-600 mt-1">
+                  <Text
+                    testID={`dose-card-status-${doseLog.id}`}
+                    className="text-xs font-medium text-blue-600 mt-1"
+                  >
                     Lembrete adiado até {formatTimeDisplay(doseLog.snoozedUntil)}
                   </Text>
                 )}

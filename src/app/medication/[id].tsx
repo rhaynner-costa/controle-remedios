@@ -126,6 +126,7 @@ export default function MedicationDetailScreen() {
                 }`}
               >
                 <Text
+                  testID="med-detail-status-badge"
                   className={`text-xs font-bold uppercase ${
                     detail.status === 'ativo'
                       ? 'text-emerald-800'
@@ -156,6 +157,7 @@ export default function MedicationDetailScreen() {
               resizeMode="cover"
             />
             <TouchableOpacity
+              testID="med-detail-btn-photo"
               onPress={handleUpdatePhoto}
               className="mt-2 self-end flex-row items-center bg-slate-100 px-3 py-1.5 rounded-lg"
             >
@@ -167,6 +169,7 @@ export default function MedicationDetailScreen() {
           </View>
         ) : (
           <TouchableOpacity
+            testID="med-detail-btn-photo"
             onPress={handleUpdatePhoto}
             className="mt-4 flex-row items-center justify-center bg-slate-50 border border-dashed border-slate-300 py-3 rounded-xl"
           >
@@ -191,6 +194,7 @@ export default function MedicationDetailScreen() {
         <View className="flex-row flex-wrap gap-2.5">
           {detail.status === 'ativo' ? (
             <TouchableOpacity
+              testID="med-detail-btn-archive"
               onPress={handleArchive}
               className="flex-1 flex-row items-center justify-center bg-slate-100 border border-slate-300 py-3.5 px-4 rounded-xl"
             >
@@ -201,6 +205,7 @@ export default function MedicationDetailScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
+              testID="med-detail-btn-reactivate"
               onPress={() => router.push(`/medication/${detail.id}/reactivate`)}
               className="flex-1 flex-row items-center justify-center bg-blue-600 py-3.5 px-4 rounded-xl"
             >
@@ -232,6 +237,7 @@ export default function MedicationDetailScreen() {
           return (
             <View
               key={cycle.id}
+              testID={`med-detail-cycle-card-${cycle.id}`}
               className={`p-3.5 rounded-xl border mb-2.5 ${
                 cycle.isActive
                   ? 'bg-blue-50/50 border-blue-200'

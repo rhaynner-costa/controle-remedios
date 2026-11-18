@@ -29,6 +29,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Hoje',
+          tabBarButtonTestID: 'tab-today',
           tabBarIcon: ({ color, size }) => (
             <CalendarCheck size={size} color={color} />
           ),
@@ -38,6 +39,7 @@ export default function TabsLayout() {
         name="medications"
         options={{
           title: 'Medicamentos',
+          tabBarButtonTestID: 'tab-medications',
           tabBarIcon: ({ color, size }) => <Pill size={size} color={color} />,
         }}
       />
@@ -45,6 +47,7 @@ export default function TabsLayout() {
         name="history"
         options={{
           title: 'Histórico',
+          tabBarButtonTestID: 'tab-history',
           tabBarIcon: ({ color, size }) => (
             <History size={size} color={color} />
           ),
@@ -54,6 +57,7 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Perfil',
+          tabBarButtonTestID: 'tab-profile',
           tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />
