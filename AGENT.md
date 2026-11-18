@@ -16,6 +16,7 @@ A IA **DEVE** seguir rigorosamente as seguintes práticas:
 4. **Tratamento de Erros:** Todo código gerado deve incluir tratamento adequado de exceções (try/catch, error boundaries, etc.) e logs claros.
 5. **Comentários e Documentação:** Comente apenas o *porquê* de lógicas complexas. O código deve ser autoexplicativo na medida do possível.
 6. **Segurança First:** Nunca deixe chaves de API, senhas ou tokens expostos (hardcoded) no código. Sempre use variáveis de ambiente.
+7. **Testabilidade e Automação (Appium / UiAutomator2):** Todo elemento interativo (`TextInput`, `TouchableOpacity`, `Pressable`, botões, abas, cards clicáveis e textos dinâmicos de status/resumo) **DEVE** conter obrigatoriamente o atributo `testID` (ou `tabBarButtonTestID` em abas do Expo Router) seguindo o padrão `kebab-case` `<contexto>-<tipo>-<identificador>` (ex: `med-new-input-commercial-name`, `today-btn-new-medication`, `dose-card-${id}`).
 
 ## 3. Fluxo de Trabalho (Workflow)
 Sempre que o usuário humano solicitar uma nova feature, alteração ou correção de bug, a IA deve seguir este ciclo rigorosamente:
@@ -30,6 +31,7 @@ Sempre que o usuário humano solicitar uma nova feature, alteração ou correç�
 - Não deve sobrescrever regras de negócio sem confirmação explícita.
 - Não deve usar bibliotecas de terceiros desnecessárias ou obsoletas.
 - Não deve enviar trechos de código incompletos com comentários do tipo `// adicione a lógica aqui`, a menos que instruída a criar apenas um esqueleto (boilerplate).
+- Não deve criar ou alterar componentes interativos de interface sem incluir os respectivos `testID` para automação de testes.
 - Se não conseguir ou não souber, pare e me avise. Não mexa no que já funciona só para uma parte rodar.
 - Mude só o necessário para a tarefa. Quer refatorar algo? Pergunte antes.
 - Siga as pastas, os nomes e as bibliotecas que o projeto já usa. Só instale novas dependências após a minha autorização.

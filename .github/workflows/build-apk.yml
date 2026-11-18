@@ -1,0 +1,73 @@
+name: Gerar APK Android (Manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Compilar APK Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Configurar Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Aceitar licenças do Android SDK
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
+
+      - name: Configurar cache do Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extrair versão do aplicativo
+        id: pkg_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar dependências NPM
+        run: npm ci
+
+      - name: Validar tipagem TypeScript
+        run: npm run typecheck
+
+      - name: Garantir debug.keystore para assinatura
+        run: |
+          if [ ! -f android/app/debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore android/app/debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: Dar permissão de execução ao Gradlew
+        run: chmod +x android/gradlew
+
+      - name: Compilar APK Release (Standalone)
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Renomear APK com a versão
+        run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/controle-remedios-v${{ steps.pkg_version.outputs.version }}.apk
+
+      - name: Publicar APK para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: controle-remedios-v${{ steps.pkg_version.outputs.version }}
+          path: android/app/build/outputs/apk/release/controle-remedios-v${{ steps.pkg_version.outputs.version }}.apk
+          if-no-files-found: error
+          retention-days: 30
