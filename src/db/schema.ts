@@ -37,7 +37,7 @@ export const RECURRENCE_TYPES = [
 
 export type RecurrenceType = (typeof RECURRENCE_TYPES)[number];
 
-export const DOSE_STATUSES = ['pendente', 'tomado', 'pulado'] as const;
+export const DOSE_STATUSES = ['pendente', 'tomado', 'pulado', 'nao_tomado'] as const;
 export type DoseStatus = (typeof DOSE_STATUSES)[number];
 
 export const userProfile = sqliteTable('user_profile', {

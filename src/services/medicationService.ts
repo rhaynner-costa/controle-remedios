@@ -54,6 +54,7 @@ export interface MedicationWithCycle extends Medication {
 function normalizeCycleSchedule(input: CycleInput): {
   scheduledTimes: string[];
   daysOfWeek: number[];
+  durationDays: number | null;
   targetOccurrences: number;
 } {
   let scheduledTimes: string[] = [];
@@ -71,12 +72,17 @@ function normalizeCycleSchedule(input: CycleInput): {
 
   const daysOfWeek = [0, 1, 2, 3, 4, 5, 6];
 
-  const targetOccurrences =
-    input.targetOccurrences && input.targetOccurrences > 0
+  const durationDays =
+    input.durationDays && input.durationDays > 0 ? input.durationDays : null;
+
+  // Quando durationDays é informado, multiplica os dias pela quantidade de horários no dia.
+  const targetOccurrences = durationDays
+    ? durationDays * scheduledTimes.length
+    : input.targetOccurrences && input.targetOccurrences > 0
       ? input.targetOccurrences
       : scheduledTimes.length;
 
-  return { scheduledTimes, daysOfWeek, targetOccurrences };
+  return { scheduledTimes, daysOfWeek, durationDays, targetOccurrences };
 }
 
 /**
@@ -120,9 +126,8 @@ export async function createMedicationWithCycle(
   try {
     const now = new Date().toISOString();
     const startDate = input.cycle.startDate || getLocalDateString();
-    const { scheduledTimes, daysOfWeek, targetOccurrences } = normalizeCycleSchedule(
-      input.cycle
-    );
+    const { scheduledTimes, daysOfWeek, durationDays, targetOccurrences } =
+      normalizeCycleSchedule(input.cycle);
 
     const [createdMed] = await db
       .insert(medications)
@@ -152,7 +157,7 @@ export async function createMedicationWithCycle(
         daysOfWeek: JSON.stringify(daysOfWeek),
         isContinuous: false,
         targetOccurrences,
-        durationDays: null,
+        durationDays,
         takenCount: 0,
         startDate,
         endDate: null,
@@ -359,7 +364,7 @@ export async function reactivateMedicationWithNewCycle(
       }
     }
 
-    const { scheduledTimes, daysOfWeek, targetOccurrences } =
+    const { scheduledTimes, daysOfWeek, durationDays, targetOccurrences } =
       normalizeCycleSchedule(cycleInput);
 
     const [newCycle] = await db
@@ -373,7 +378,7 @@ export async function reactivateMedicationWithNewCycle(
         daysOfWeek: JSON.stringify(daysOfWeek),
         isContinuous: false,
         targetOccurrences,
-        durationDays: null,
+        durationDays,
         takenCount: 0,
         startDate: todayDate,
         endDate: null,

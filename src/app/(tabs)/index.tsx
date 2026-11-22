@@ -217,6 +217,13 @@ export default function TodayScreen() {
   const totalDoses = doses.length;
   const takenDoses = doses.filter((d) => d.doseLog.status === 'tomado').length;
 
+  const handleNewMedication = () => {
+    router.push({
+      pathname: '/medication/new',
+      params: { startDate: selectedDate },
+    });
+  };
+
   return (
     <View className="flex-1 bg-slate-50 px-4 pt-4">
       {/* Cabeçalho e Saudação */}
@@ -234,7 +241,7 @@ export default function TodayScreen() {
         </View>
         <TouchableOpacity
           testID="today-btn-new-medication"
-          onPress={() => router.push('/medication/new')}
+          onPress={handleNewMedication}
           className="flex-row items-center bg-blue-600 px-3.5 py-2.5 rounded-xl"
         >
           <Plus size={16} color="#FFFFFF" />
@@ -328,7 +335,7 @@ export default function TodayScreen() {
             </Text>
             <TouchableOpacity
               testID="today-empty-btn-new-medication"
-              onPress={() => router.push('/medication/new')}
+              onPress={handleNewMedication}
               className="bg-blue-600 px-4 py-2.5 rounded-xl"
             >
               <Text className="text-xs font-bold text-white">
@@ -505,7 +512,7 @@ export default function TodayScreen() {
                   </Text>
                 </TouchableOpacity>
 
-                {activeItem.doseLog.status !== 'pendente' && (
+                {activeItem.doseLog.status === 'tomado' && (
                   <TouchableOpacity
                     testID="dose-modal-btn-revert"
                     onPress={handleRevertFromModal}

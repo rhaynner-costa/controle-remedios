@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lt, lte } from 'drizzle-orm';
 import { db } from '@/db/client';
 import {
   doseLogs,
@@ -123,10 +123,32 @@ export async function syncDailyDosesForDate(
   }
 }
 
+/**
+ * Doses pendentes de dias anteriores à data de hoje viram `nao_tomado`.
+ * No próprio dia continuam `pendente`.
+ */
+export async function markOverdueDosesAsMissed(): Promise<void> {
+  try {
+    await db
+      .update(doseLogs)
+      .set({ status: 'nao_tomado' })
+      .where(
+        and(
+          eq(doseLogs.status, 'pendente'),
+          lt(doseLogs.scheduledAt, `${getLocalDateString()}T00:00:00`)
+        )
+      );
+  } catch (error) {
+    console.error('[ScheduleService] Erro ao marcar doses não tomadas:', error);
+    throw error;
+  }
+}
+
 export async function getDosesForDate(
   dateStr: string = getLocalDateString()
 ): Promise<DailyDoseItem[]> {
   try {
+    await markOverdueDosesAsMissed();
     await syncDailyDosesForDate(dateStr);
 
     const startBound = `${dateStr}T00:00:00`;
@@ -371,28 +393,18 @@ export async function snoozeDose15Minutes(doseLogId: number): Promise<void> {
 
 export async function getDoseHistory(limit: number = 100): Promise<DailyDoseItem[]> {
   try {
-    const logs = await db
-      .select()
-      .from(doseLogs)
-      .where(eq(doseLogs.status, 'tomado'))
-      .orderBy(desc(doseLogs.takenAt))
-      .limit(limit);
+    await markOverdueDosesAsMissed();
 
-    const skippedLogs = await db
+    // Todas as doses até o fim de hoje (doses futuras ainda não aparecem)
+    const combined = await db
       .select()
       .from(doseLogs)
-      .where(eq(doseLogs.status, 'pulado'))
+      .where(lte(doseLogs.scheduledAt, `${getLocalDateString()}T23:59:59`))
       .orderBy(desc(doseLogs.scheduledAt))
       .limit(limit);
 
-    const combined = [...logs, ...skippedLogs].sort((a, b) => {
-      const dateA = a.takenAt || a.scheduledAt;
-      const dateB = b.takenAt || b.scheduledAt;
-      return dateB.localeCompare(dateA);
-    });
-
     const items: DailyDoseItem[] = [];
-    for (const log of combined.slice(0, limit)) {
+    for (const log of combined) {
       const [med] = await db
         .select()
         .from(medications)

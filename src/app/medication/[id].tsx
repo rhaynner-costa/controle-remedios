@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Archive,
   RotateCcw,
@@ -25,10 +26,12 @@ import {
 import { pickBoxPhotoFromCamera } from '@/services/imageService';
 import { formatDateDisplay, WEEKDAY_LABELS } from '@/utils/dateUtils';
 import { PillIcon } from '@/components/PillIcon';
+import { SHOW_BOX_PHOTO } from '@/utils/featureFlags';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const medicationId = Number(id);
 
   const [detail, setDetail] = useState<MedicationWithCycle | null>(null);
@@ -97,7 +100,7 @@ export default function MedicationDetailScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
       className="flex-1 bg-slate-50 px-4 pt-4"
     >
       {/* Card Principal */}
@@ -149,7 +152,7 @@ export default function MedicationDetailScreen() {
         </View>
 
         {/* Foto da Caixa */}
-        {detail.boxPhotoBase64 ? (
+        {SHOW_BOX_PHOTO && (detail.boxPhotoBase64 ? (
           <View className="mt-4">
             <Image
               source={{ uri: detail.boxPhotoBase64 }}
@@ -178,7 +181,7 @@ export default function MedicationDetailScreen() {
               Adicionar Foto da Caixa
             </Text>
           </TouchableOpacity>
-        )}
+        ))}
       </View>
 
       {/* Ações de Controle de Status (Sem exclusão física) */}

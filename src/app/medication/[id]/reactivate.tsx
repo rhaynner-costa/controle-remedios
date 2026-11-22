@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RotateCcw } from 'lucide-react-native';
 import {
   getMedicationDetail,
@@ -22,6 +23,7 @@ import {
 export default function ReactivateMedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const medicationId = Number(id);
 
   const [detail, setDetail] = useState<MedicationWithCycle | null>(null);
@@ -64,11 +66,11 @@ export default function ReactivateMedicationScreen() {
       return;
     }
 
-    const occurrencesNum = parseInt(cycleForm.targetOccurrences || '0', 10) || 0;
-    if (occurrencesNum <= 0) {
+    const durationDaysNum = parseInt(cycleForm.targetOccurrences || '0', 10) || 0;
+    if (durationDaysNum <= 0) {
       Alert.alert(
         'Ocorrências',
-        'Informe um número válido de ocorrências (pelo menos 1 dose).'
+        'Informe um número válido de dias (pelo menos 1 dia).'
       );
       return;
     }
@@ -80,7 +82,7 @@ export default function ReactivateMedicationScreen() {
         recurrenceType: 'fixed_times',
         scheduledTimes: cycleForm.scheduledTimes,
         isContinuous: false,
-        targetOccurrences: occurrencesNum,
+        durationDays: durationDaysNum,
       });
 
       router.back();
@@ -101,7 +103,7 @@ export default function ReactivateMedicationScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
       className="flex-1 bg-slate-50 px-4 pt-4"
     >
       <View className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
