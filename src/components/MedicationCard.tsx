@@ -4,6 +4,7 @@ import { ChevronRight, Calendar, Clock } from 'lucide-react-native';
 import { MedicationWithCycle } from '@/services/medicationService';
 import { formatDateDisplay } from '@/utils/dateUtils';
 import { PillIcon } from './PillIcon';
+import { SHOW_BOX_PHOTO } from '@/utils/featureFlags';
 
 export interface MedicationCardProps {
   medication: MedicationWithCycle;
@@ -52,7 +53,7 @@ export function MedicationCard({ medication, onPress }: MedicationCardProps) {
       className="bg-white border border-slate-200 rounded-2xl p-4 mb-3 flex-row items-center"
     >
       <View className="mr-3.5">
-        {medication.boxPhotoBase64 ? (
+        {SHOW_BOX_PHOTO && medication.boxPhotoBase64 ? (
           <View className="relative">
             <Image
               source={{ uri: medication.boxPhotoBase64 }}

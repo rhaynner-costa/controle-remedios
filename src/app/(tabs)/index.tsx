@@ -33,6 +33,7 @@ import {
 import { getUserProfile } from '@/services/userService';
 import {
   buildScheduledIso,
+  extractIsoDatePart,
   formatDateDisplay,
   formatTimeDisplay,
   getLocalDateString,
@@ -92,6 +93,14 @@ export default function TodayScreen() {
   };
 
   const handleOpenDoseModal = (item: DailyDoseItem) => {
+    if (extractIsoDatePart(item.doseLog.scheduledAt) > getLocalDateString()) {
+      Alert.alert(
+        'Agendamento Futuro',
+        'Não é possível marcar como tomado um medicamento agendado para uma data futura.'
+      );
+      return;
+    }
+
     setActiveItem(item);
     if (item.doseLog.status === 'tomado' && item.doseLog.takenAt) {
       const brDate = formatDateDisplay(item.doseLog.takenAt);
@@ -217,6 +226,13 @@ export default function TodayScreen() {
   const totalDoses = doses.length;
   const takenDoses = doses.filter((d) => d.doseLog.status === 'tomado').length;
 
+  const handleNewMedication = () => {
+    router.push({
+      pathname: '/medication/new',
+      params: { startDate: selectedDate },
+    });
+  };
+
   return (
     <View className="flex-1 bg-slate-50 px-4 pt-4">
       {/* Cabeçalho e Saudação */}
@@ -234,7 +250,7 @@ export default function TodayScreen() {
         </View>
         <TouchableOpacity
           testID="today-btn-new-medication"
-          onPress={() => router.push('/medication/new')}
+          onPress={handleNewMedication}
           className="flex-row items-center bg-blue-600 px-3.5 py-2.5 rounded-xl"
         >
           <Plus size={16} color="#FFFFFF" />
@@ -328,7 +344,7 @@ export default function TodayScreen() {
             </Text>
             <TouchableOpacity
               testID="today-empty-btn-new-medication"
-              onPress={() => router.push('/medication/new')}
+              onPress={handleNewMedication}
               className="bg-blue-600 px-4 py-2.5 rounded-xl"
             >
               <Text className="text-xs font-bold text-white">
@@ -505,7 +521,7 @@ export default function TodayScreen() {
                   </Text>
                 </TouchableOpacity>
 
-                {activeItem.doseLog.status !== 'pendente' && (
+                {activeItem.doseLog.status === 'tomado' && (
                   <TouchableOpacity
                     testID="dose-modal-btn-revert"
                     onPress={handleRevertFromModal}

@@ -16,6 +16,12 @@ import {
   isScheduledTimeReached,
 } from '@/utils/dateUtils';
 import { PillIcon } from './PillIcon';
+import {
+  DoseStatusBadge,
+  getDoseCardClass,
+  getDoseVisualStatus,
+} from './DoseStatusBadge';
+import { SHOW_BOX_PHOTO } from '@/utils/featureFlags';
 
 export interface DoseCardProps {
   item: DailyDoseItem;
@@ -34,9 +40,8 @@ export function DoseCard({
 }: DoseCardProps) {
   const { doseLog, medication, cycle } = item;
   const scheduledTime = formatTimeDisplay(doseLog.scheduledAt);
-  const isTaken = doseLog.status === 'tomado';
-  const isSkipped = doseLog.status === 'pulado';
   const isPending = doseLog.status === 'pendente';
+  const visualStatus = getDoseVisualStatus(doseLog);
 
   const translateX = useRef(new Animated.Value(0)).current;
 
@@ -113,18 +118,12 @@ export function DoseCard({
           testID={`dose-card-${doseLog.id}`}
           activeOpacity={0.85}
           onPress={() => onPress(item)}
-          className={`rounded-2xl p-4 border ${
-            isTaken
-              ? 'bg-emerald-50 border-emerald-200'
-              : isSkipped
-              ? 'bg-slate-100 border-slate-200'
-              : 'bg-white border-slate-200'
-          }`}
+          className={`rounded-2xl p-4 border ${getDoseCardClass(visualStatus)}`}
         >
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1 pr-2">
               <View className="mr-3 items-center justify-center">
-                {medication.boxPhotoBase64 ? (
+                {SHOW_BOX_PHOTO && medication.boxPhotoBase64 ? (
                   <View className="relative">
                     <Image
                       source={{ uri: medication.boxPhotoBase64 }}
@@ -166,12 +165,18 @@ export function DoseCard({
                   ) : null}
                 </View>
 
-                <Text className="text-base font-bold text-slate-900 mt-1">
-                  {medication.commercialName}{' '}
-                  <Text className="text-sm font-medium text-slate-600">
-                    ({medication.concentration})
+                <View className="flex-row items-start justify-between mt-1">
+                  <Text className="text-base font-bold text-slate-900 flex-1 mr-2">
+                    {medication.commercialName}{' '}
+                    <Text className="text-sm font-medium text-slate-600">
+                      ({medication.concentration})
+                    </Text>
                   </Text>
-                </Text>
+                  <DoseStatusBadge
+                    status={visualStatus}
+                    testID={`dose-card-status-${doseLog.id}`}
+                  />
+                </View>
 
                 <Text className="text-xs text-slate-600">
                   {medication.activeIngredient} • Tomar{' '}
@@ -180,27 +185,15 @@ export function DoseCard({
                   </Text>
                 </Text>
 
-                {isTaken && doseLog.takenAt && (
-                  <Text
-                    testID={`dose-card-status-${doseLog.id}`}
-                    className="text-xs font-semibold text-emerald-700 mt-1"
-                  >
-                    ✓ Tomado em {formatDateTimeDisplay(doseLog.takenAt)}
-                  </Text>
-                )}
-
-                {isSkipped && (
-                  <Text
-                    testID={`dose-card-status-${doseLog.id}`}
-                    className="text-xs font-semibold text-amber-700 mt-1"
-                  >
-                    Dose pulada (toque para editar ou desfazer)
+                {visualStatus === 'tomado' && doseLog.takenAt && (
+                  <Text className="text-xs font-semibold text-emerald-800 mt-1">
+                    {formatDateTimeDisplay(doseLog.takenAt)}
                   </Text>
                 )}
 
                 {isPending && doseLog.snoozedUntil && (
                   <Text
-                    testID={`dose-card-status-${doseLog.id}`}
+                    testID={`dose-card-snooze-${doseLog.id}`}
                     className="text-xs font-medium text-blue-600 mt-1"
                   >
                     Lembrete adiado até {formatTimeDisplay(doseLog.snoozedUntil)}

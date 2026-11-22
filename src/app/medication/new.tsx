@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, Image as ImageIcon, Trash2, Check } from 'lucide-react-native';
 import {
   MEDICATION_TYPES,
@@ -23,6 +24,7 @@ import {
 } from '@/services/imageService';
 import { createMedicationWithCycle } from '@/services/medicationService';
 import { PillAppearancePicker } from '@/components/PillAppearancePicker';
+import { SHOW_BOX_PHOTO } from '@/utils/featureFlags';
 import {
   CycleFormFields,
   CycleFormState,
@@ -41,6 +43,8 @@ const TYPE_LABELS: Record<MedicationType, string> = {
 
 export default function NewMedicationScreen() {
   const router = useRouter();
+  const { startDate } = useLocalSearchParams<{ startDate?: string }>();
+  const insets = useSafeAreaInsets();
   const [commercialName, setCommercialName] = useState('');
   const [activeIngredient, setActiveIngredient] = useState('');
   const [concentration, setConcentration] = useState('');
@@ -125,11 +129,11 @@ export default function NewMedicationScreen() {
       return;
     }
 
-    const occurrencesNum = parseInt(cycleForm.targetOccurrences || '0', 10) || 0;
-    if (occurrencesNum <= 0) {
+    const durationDaysNum = parseInt(cycleForm.targetOccurrences || '0', 10) || 0;
+    if (durationDaysNum <= 0) {
       Alert.alert(
         'Ocorrências',
-        'Informe um número válido de ocorrências (pelo menos 1 dose).'
+        'Informe um número válido de dias (pelo menos 1 dia).'
       );
       return;
     }
@@ -150,7 +154,11 @@ export default function NewMedicationScreen() {
           recurrenceType: 'fixed_times',
           scheduledTimes: cycleForm.scheduledTimes,
           isContinuous: false,
-          targetOccurrences: occurrencesNum,
+          durationDays: durationDaysNum,
+          startDate:
+            typeof startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(startDate)
+              ? startDate
+              : undefined,
         },
       });
 
@@ -172,7 +180,7 @@ export default function NewMedicationScreen() {
       className="flex-1 bg-slate-50"
     >
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
         className="px-4 pt-4"
       >
         {/* Dados do Medicamento */}
@@ -255,6 +263,7 @@ export default function NewMedicationScreen() {
         />
 
         {/* Foto da Caixa (Salva no SQLite em Base64 comprimido) */}
+        {SHOW_BOX_PHOTO && (
         <View className="bg-white border border-slate-200 rounded-2xl p-4 mb-4">
           <Text className="text-base font-bold text-slate-900 mb-1">
             Foto da Caixa
@@ -307,6 +316,7 @@ export default function NewMedicationScreen() {
             </View>
           )}
         </View>
+        )}
 
         {/* Posologia / Forma de Tomar */}
         <CycleFormFields value={cycleForm} onChange={setCycleForm} />

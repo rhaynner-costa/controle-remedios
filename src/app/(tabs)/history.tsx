@@ -6,7 +6,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { Calendar, CheckCircle2, SkipForward } from 'lucide-react-native';
+import { Calendar } from 'lucide-react-native';
 import { DailyDoseItem, getDoseHistory } from '@/services/scheduleService';
 import {
   extractIsoDatePart,
@@ -16,6 +16,11 @@ import {
   getLocalDateString,
 } from '@/utils/dateUtils';
 import { PillIcon } from '@/components/PillIcon';
+import {
+  DoseStatusBadge,
+  getDoseCardClass,
+  getDoseVisualStatus,
+} from '@/components/DoseStatusBadge';
 
 interface HistorySection {
   dateKey: string;
@@ -101,11 +106,13 @@ export default function HistoryScreen() {
           </View>
         )}
         renderItem={({ item }) => {
-          const isTaken = item.doseLog.status === 'tomado';
+          const visualStatus = getDoseVisualStatus(item.doseLog);
           return (
             <View
               testID={`history-item-${item.doseLog.id}`}
-              className="bg-white border border-slate-200 rounded-2xl p-4 mb-2.5 flex-row items-center"
+              className={`border rounded-2xl p-4 mb-2.5 flex-row items-center ${getDoseCardClass(
+                visualStatus
+              )}`}
             >
               <View className="mr-3">
                 <PillIcon
@@ -116,30 +123,25 @@ export default function HistoryScreen() {
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-bold text-slate-900">
-                  {item.medication.commercialName} (
-                  {item.medication.concentration})
-                </Text>
+                <View className="flex-row items-start justify-between">
+                  <Text className="text-sm font-bold text-slate-900 flex-1 mr-2">
+                    {item.medication.commercialName} (
+                    {item.medication.concentration})
+                  </Text>
+                  <DoseStatusBadge
+                    status={visualStatus}
+                    testID={`history-item-status-${item.doseLog.id}`}
+                  />
+                </View>
                 <Text className="text-xs text-slate-600">
                   Dose: {item.cycle.doseAmount} • Agendado:{' '}
                   {formatDateTimeDisplay(item.doseLog.scheduledAt)}
                 </Text>
-                {isTaken && item.doseLog.takenAt ? (
-                  <Text className="text-xs font-semibold text-emerald-700 mt-0.5">
-                    ✓ Tomado em {formatDateDisplay(item.doseLog.takenAt)} às{' '}
+                {visualStatus === 'tomado' && item.doseLog.takenAt && (
+                  <Text className="text-xs font-semibold text-emerald-800 mt-1">
+                    {formatDateDisplay(item.doseLog.takenAt)} às{' '}
                     {formatTimeDisplay(item.doseLog.takenAt)}
                   </Text>
-                ) : (
-                  <Text className="text-xs font-semibold text-amber-700 mt-0.5">
-                    Dose pulada
-                  </Text>
-                )}
-              </View>
-              <View className="ml-2">
-                {isTaken ? (
-                  <CheckCircle2 size={20} color="#059669" />
-                ) : (
-                  <SkipForward size={20} color="#D97706" />
                 )}
               </View>
             </View>
@@ -151,8 +153,8 @@ export default function HistoryScreen() {
               Nenhum registro no histórico ainda
             </Text>
             <Text className="text-xs text-slate-500 text-center mt-1">
-              Assim que você marcar seus medicamentos como tomados, o registro
-              permanente aparecerá aqui agrupado por data.
+              Assim que você cadastrar medicamentos, as doses aparecerão aqui
+              agrupadas por data, com o status de cada uma.
             </Text>
           </View>
         }

@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { userProfile, UserProfile } from '@/db/schema';
+import { parseBrDateToIso } from '@/utils/dateUtils';
 
 export interface SaveUserInput {
   name: string;
@@ -22,6 +23,13 @@ export async function saveUserProfile(input: SaveUserInput): Promise<UserProfile
   const trimmedName = input.name.trim();
   if (!trimmedName) {
     throw new Error('O nome do usuário é obrigatório.');
+  }
+
+  const trimmedBirthDate = input.birthDate?.trim() || '';
+  if (trimmedBirthDate && !parseBrDateToIso(trimmedBirthDate)) {
+    throw new Error(
+      'Informe uma data de nascimento válida no formato DD/MM/AAAA.'
+    );
   }
 
   try {

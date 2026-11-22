@@ -1,4 +1,4 @@
-import { desc, eq, and } from 'drizzle-orm';
+import { desc, eq, and, gt, inArray } from 'drizzle-orm';
 import { db } from '@/db/client';
 import {
   medications,
@@ -19,6 +19,7 @@ import {
   buildScheduledIso,
   calculateTimesFromInterval,
   getLocalDateString,
+  getLocalDateTimeIso,
 } from '@/utils/dateUtils';
 
 export interface CycleInput {
@@ -54,6 +55,7 @@ export interface MedicationWithCycle extends Medication {
 function normalizeCycleSchedule(input: CycleInput): {
   scheduledTimes: string[];
   daysOfWeek: number[];
+  durationDays: number | null;
   targetOccurrences: number;
 } {
   let scheduledTimes: string[] = [];
@@ -71,12 +73,17 @@ function normalizeCycleSchedule(input: CycleInput): {
 
   const daysOfWeek = [0, 1, 2, 3, 4, 5, 6];
 
-  const targetOccurrences =
-    input.targetOccurrences && input.targetOccurrences > 0
+  const durationDays =
+    input.durationDays && input.durationDays > 0 ? input.durationDays : null;
+
+  // Quando durationDays é informado, multiplica os dias pela quantidade de horários no dia.
+  const targetOccurrences = durationDays
+    ? durationDays * scheduledTimes.length
+    : input.targetOccurrences && input.targetOccurrences > 0
       ? input.targetOccurrences
       : scheduledTimes.length;
 
-  return { scheduledTimes, daysOfWeek, targetOccurrences };
+  return { scheduledTimes, daysOfWeek, durationDays, targetOccurrences };
 }
 
 /**
@@ -120,67 +127,71 @@ export async function createMedicationWithCycle(
   try {
     const now = new Date().toISOString();
     const startDate = input.cycle.startDate || getLocalDateString();
-    const { scheduledTimes, daysOfWeek, targetOccurrences } = normalizeCycleSchedule(
-      input.cycle
-    );
-
-    const [createdMed] = await db
-      .insert(medications)
-      .values({
-        commercialName,
-        activeIngredient,
-        concentration,
-        type: input.type,
-        status: 'ativo',
-        boxPhotoBase64: input.boxPhotoBase64 || null,
-        pillShape: input.pillShape,
-        pillColorPrimary: input.pillColorPrimary,
-        pillColorSecondary: input.pillColorSecondary,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning();
-
-    const [createdCycle] = await db
-      .insert(treatmentCycles)
-      .values({
-        medicationId: createdMed.id,
-        doseAmount: input.cycle.doseAmount.trim() || '1 dose',
-        recurrenceType: 'fixed_times',
-        intervalHours: null,
-        scheduledTimes: JSON.stringify(scheduledTimes),
-        daysOfWeek: JSON.stringify(daysOfWeek),
-        isContinuous: false,
-        targetOccurrences,
-        durationDays: null,
-        takenCount: 0,
-        startDate,
-        endDate: null,
-        isActive: true,
-        notificationIds: '[]',
-        createdAt: now,
-      })
-      .returning();
+    const { scheduledTimes, daysOfWeek, durationDays, targetOccurrences } =
+      normalizeCycleSchedule(input.cycle);
 
     const slots = buildOccurrenceSlots(
       startDate,
       scheduledTimes,
       targetOccurrences
     );
-    if (slots.length > 0) {
-      await db.insert(doseLogs).values(
-        slots.map((scheduledAt) => ({
-          treatmentCycleId: createdCycle.id,
-          medicationId: createdMed.id,
-          scheduledAt,
-          status: 'pendente' as const,
-          takenAt: null,
-          snoozedUntil: null,
-          notes: null,
+
+    const { createdMed, createdCycle } = await db.transaction(async (tx) => {
+      const [medRow] = await tx
+        .insert(medications)
+        .values({
+          commercialName,
+          activeIngredient,
+          concentration,
+          type: input.type,
+          status: 'ativo',
+          boxPhotoBase64: input.boxPhotoBase64 || null,
+          pillShape: input.pillShape,
+          pillColorPrimary: input.pillColorPrimary,
+          pillColorSecondary: input.pillColorSecondary,
           createdAt: now,
-        }))
-      );
-    }
+          updatedAt: now,
+        })
+        .returning();
+
+      const [cycleRow] = await tx
+        .insert(treatmentCycles)
+        .values({
+          medicationId: medRow.id,
+          doseAmount: input.cycle.doseAmount.trim() || '1 dose',
+          recurrenceType: 'fixed_times',
+          intervalHours: null,
+          scheduledTimes: JSON.stringify(scheduledTimes),
+          daysOfWeek: JSON.stringify(daysOfWeek),
+          isContinuous: false,
+          targetOccurrences,
+          durationDays,
+          takenCount: 0,
+          startDate,
+          endDate: null,
+          isActive: true,
+          notificationIds: '[]',
+          createdAt: now,
+        })
+        .returning();
+
+      if (slots.length > 0) {
+        await tx.insert(doseLogs).values(
+          slots.map((scheduledAt) => ({
+            treatmentCycleId: cycleRow.id,
+            medicationId: medRow.id,
+            scheduledAt,
+            status: 'pendente' as const,
+            takenAt: null,
+            snoozedUntil: null,
+            notes: null,
+            createdAt: now,
+          }))
+        );
+      }
+
+      return { createdMed: medRow, createdCycle: cycleRow };
+    });
 
     const notifIds = await scheduleCycleNotifications({
       medicationId: createdMed.id,
@@ -228,23 +239,35 @@ export async function listMedicationsByStatus(
           .from(medications)
           .orderBy(desc(medications.updatedAt));
 
-    const results: MedicationWithCycle[] = [];
-    for (const med of meds) {
-      const cycles = await db
-        .select()
-        .from(treatmentCycles)
-        .where(eq(treatmentCycles.medicationId, med.id))
-        .orderBy(desc(treatmentCycles.id));
+    if (meds.length === 0) return [];
 
+    const allCycles = await db
+      .select()
+      .from(treatmentCycles)
+      .where(
+        inArray(
+          treatmentCycles.medicationId,
+          meds.map((m) => m.id)
+        )
+      )
+      .orderBy(desc(treatmentCycles.id));
+
+    const cyclesByMed = new Map<number, TreatmentCycle[]>();
+    for (const c of allCycles) {
+      const list = cyclesByMed.get(c.medicationId) ?? [];
+      list.push(c);
+      cyclesByMed.set(c.medicationId, list);
+    }
+
+    return meds.map((med) => {
+      const cycles = cyclesByMed.get(med.id) ?? [];
       const activeCycle = cycles.find((c) => c.isActive) ?? cycles[0] ?? null;
-      results.push({
+      return {
         ...med,
         activeCycle,
         allCycles: cycles,
-      });
-    }
-
-    return results;
+      };
+    });
   } catch (error) {
     console.error('[MedicationService] Erro ao listar medicamentos:', error);
     throw error;
@@ -289,25 +312,30 @@ export async function getMedicationDetail(
 export async function archiveMedication(medicationId: number): Promise<void> {
   try {
     const now = new Date().toISOString();
+    const nowLocalIso = getLocalDateTimeIso();
     const todayDate = getLocalDateString();
     const detail = await getMedicationDetail(medicationId);
     if (!detail) throw new Error('Medicamento não encontrado.');
 
-    for (const cycle of detail.allCycles) {
-      if (cycle.isActive) {
-        const notifIds: string[] = JSON.parse(cycle.notificationIds || '[]');
-        await cancelNotificationIds(notifIds);
+    const activeCycles = detail.allCycles.filter((c) => c.isActive);
+    for (const cycle of activeCycles) {
+      const notifIds: string[] = JSON.parse(cycle.notificationIds || '[]');
+      await cancelNotificationIds(notifIds);
+    }
 
-        await db
+    await db.transaction(async (tx) => {
+      for (const cycle of activeCycles) {
+        await tx
           .delete(doseLogs)
           .where(
             and(
               eq(doseLogs.treatmentCycleId, cycle.id),
-              eq(doseLogs.status, 'pendente')
+              eq(doseLogs.status, 'pendente'),
+              gt(doseLogs.scheduledAt, nowLocalIso)
             )
           );
 
-        await db
+        await tx
           .update(treatmentCycles)
           .set({
             isActive: false,
@@ -316,12 +344,12 @@ export async function archiveMedication(medicationId: number): Promise<void> {
           })
           .where(eq(treatmentCycles.id, cycle.id));
       }
-    }
 
-    await db
-      .update(medications)
-      .set({ status: 'arquivado', updatedAt: now })
-      .where(eq(medications.id, medicationId));
+      await tx
+        .update(medications)
+        .set({ status: 'arquivado', updatedAt: now })
+        .where(eq(medications.id, medicationId));
+    });
   } catch (error) {
     console.error('[MedicationService] Erro ao arquivar medicamento:', error);
     throw error;
@@ -342,13 +370,25 @@ export async function reactivateMedicationWithNewCycle(
     const detail = await getMedicationDetail(medicationId);
     if (!detail) throw new Error('Medicamento não encontrado.');
 
-    // Encerra qualquer ciclo anterior que ainda esteja marcado como ativo
-    for (const oldCycle of detail.allCycles) {
-      if (oldCycle.isActive) {
-        const notifIds: string[] = JSON.parse(oldCycle.notificationIds || '[]');
-        await cancelNotificationIds(notifIds);
+    // Cancela lembretes de qualquer ciclo anterior que ainda esteja marcado como ativo
+    const activeOldCycles = detail.allCycles.filter((c) => c.isActive);
+    for (const oldCycle of activeOldCycles) {
+      const notifIds: string[] = JSON.parse(oldCycle.notificationIds || '[]');
+      await cancelNotificationIds(notifIds);
+    }
 
-        await db
+    const { scheduledTimes, daysOfWeek, durationDays, targetOccurrences } =
+      normalizeCycleSchedule(cycleInput);
+
+    const slots = buildOccurrenceSlots(
+      todayDate,
+      scheduledTimes,
+      targetOccurrences
+    );
+
+    const newCycle = await db.transaction(async (tx) => {
+      for (const oldCycle of activeOldCycles) {
+        await tx
           .update(treatmentCycles)
           .set({
             isActive: false,
@@ -357,51 +397,50 @@ export async function reactivateMedicationWithNewCycle(
           })
           .where(eq(treatmentCycles.id, oldCycle.id));
       }
-    }
 
-    const { scheduledTimes, daysOfWeek, targetOccurrences } =
-      normalizeCycleSchedule(cycleInput);
-
-    const [newCycle] = await db
-      .insert(treatmentCycles)
-      .values({
-        medicationId: detail.id,
-        doseAmount: cycleInput.doseAmount.trim() || '1 dose',
-        recurrenceType: 'fixed_times',
-        intervalHours: null,
-        scheduledTimes: JSON.stringify(scheduledTimes),
-        daysOfWeek: JSON.stringify(daysOfWeek),
-        isContinuous: false,
-        targetOccurrences,
-        durationDays: null,
-        takenCount: 0,
-        startDate: todayDate,
-        endDate: null,
-        isActive: true,
-        notificationIds: '[]',
-        createdAt: now,
-      })
-      .returning();
-
-    const slots = buildOccurrenceSlots(
-      todayDate,
-      scheduledTimes,
-      targetOccurrences
-    );
-    if (slots.length > 0) {
-      await db.insert(doseLogs).values(
-        slots.map((scheduledAt) => ({
-          treatmentCycleId: newCycle.id,
+      const [cycleRow] = await tx
+        .insert(treatmentCycles)
+        .values({
           medicationId: detail.id,
-          scheduledAt,
-          status: 'pendente' as const,
-          takenAt: null,
-          snoozedUntil: null,
-          notes: null,
+          doseAmount: cycleInput.doseAmount.trim() || '1 dose',
+          recurrenceType: 'fixed_times',
+          intervalHours: null,
+          scheduledTimes: JSON.stringify(scheduledTimes),
+          daysOfWeek: JSON.stringify(daysOfWeek),
+          isContinuous: false,
+          targetOccurrences,
+          durationDays,
+          takenCount: 0,
+          startDate: todayDate,
+          endDate: null,
+          isActive: true,
+          notificationIds: '[]',
           createdAt: now,
-        }))
-      );
-    }
+        })
+        .returning();
+
+      if (slots.length > 0) {
+        await tx.insert(doseLogs).values(
+          slots.map((scheduledAt) => ({
+            treatmentCycleId: cycleRow.id,
+            medicationId: detail.id,
+            scheduledAt,
+            status: 'pendente' as const,
+            takenAt: null,
+            snoozedUntil: null,
+            notes: null,
+            createdAt: now,
+          }))
+        );
+      }
+
+      await tx
+        .update(medications)
+        .set({ status: 'ativo', updatedAt: now })
+        .where(eq(medications.id, medicationId));
+
+      return cycleRow;
+    });
 
     const notifIds = await scheduleCycleNotifications({
       medicationId: detail.id,
@@ -419,11 +458,6 @@ export async function reactivateMedicationWithNewCycle(
       .update(treatmentCycles)
       .set({ notificationIds: JSON.stringify(notifIds) })
       .where(eq(treatmentCycles.id, newCycle.id));
-
-    await db
-      .update(medications)
-      .set({ status: 'ativo', updatedAt: now })
-      .where(eq(medications.id, medicationId));
   } catch (error) {
     console.error('[MedicationService] Erro ao reativar medicamento:', error);
     throw error;

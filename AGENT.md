@@ -17,6 +17,7 @@ A IA **DEVE** seguir rigorosamente as seguintes práticas:
 5. **Comentários e Documentação:** Comente apenas o *porquê* de lógicas complexas. O código deve ser autoexplicativo na medida do possível.
 6. **Segurança First:** Nunca deixe chaves de API, senhas ou tokens expostos (hardcoded) no código. Sempre use variáveis de ambiente.
 7. **Testabilidade e Automação (Appium / UiAutomator2):** Todo elemento interativo (`TextInput`, `TouchableOpacity`, `Pressable`, botões, abas, cards clicáveis e textos dinâmicos de status/resumo) **DEVE** conter obrigatoriamente o atributo `testID` (ou `tabBarButtonTestID` em abas do Expo Router) seguindo o padrão `kebab-case` `<contexto>-<tipo>-<identificador>` (ex: `med-new-input-commercial-name`, `today-btn-new-medication`, `dose-card-${id}`).
+8. **Barra de Navegação do Android (Safe Area):** Toda tela e componente fixo na base (barra de abas, botões flutuantes, rodapés, `ScrollView` cujo conteúdo termina em botão) **DEVE** se adaptar à barra de navegação do Android (3 botões ou gestos), somando `useSafeAreaInsets().bottom` (ou usando `SafeAreaView`) ao espaçamento inferior. Nunca usar altura/padding inferior fixo que ignore o inset.
 
 ## 3. Fluxo de Trabalho (Workflow)
 Sempre que o usuário humano solicitar uma nova feature, alteração ou correção de bug, a IA deve seguir este ciclo rigorosamente:

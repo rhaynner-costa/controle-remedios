@@ -70,10 +70,11 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
     setNewTimeMinute(String(m).padStart(2, '0'));
   };
 
-  const totalOccurrencesNum = Math.max(
+  const daysNum = Math.max(
     0,
     parseInt(value.targetOccurrences || '0', 10) || 0
   );
+  const totalDoses = daysNum * value.scheduledTimes.length;
 
   return (
     <View className="bg-white border border-slate-200 rounded-2xl p-4 mb-4">
@@ -160,9 +161,9 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
         )}
       </View>
 
-      {/* Número de Ocorrências */}
+      {/* Número de Ocorrências (Dias) */}
       <Text className="text-xs font-semibold text-slate-600 uppercase mb-1.5">
-        Número de Ocorrências (Total de Doses) *
+        Número de Ocorrências (Dias) *
       </Text>
       <View className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
         <TextInput
@@ -176,12 +177,19 @@ export function CycleFormFields({ value, onChange }: CycleFormFieldsProps) {
           placeholder="Ex: 3"
           className="bg-white border border-emerald-300 rounded-lg px-3 py-2 font-bold text-slate-900"
         />
-        {totalOccurrencesNum > 0 && value.scheduledTimes.length > 0 && (
-          <Text className="text-[11px] text-emerald-800 mt-1.5">
+        {daysNum > 0 && value.scheduledTimes.length > 0 && (
+          <Text
+            testID="cycle-summary-occurrences"
+            className="text-[11px] text-emerald-800 mt-1.5"
+          >
             Serão gerados exatamente{' '}
-            <Text className="font-bold">{totalOccurrencesNum} agendamentos</Text>
-            , repetindo os horários ({value.scheduledTimes.join(' • ')}) até
-            completar todas as doses.
+            <Text className="font-bold">
+              {totalDoses} {totalDoses === 1 ? 'agendamento' : 'agendamentos'}
+            </Text>{' '}
+            ({daysNum} {daysNum === 1 ? 'dia' : 'dias'} ×{' '}
+            {value.scheduledTimes.length}{' '}
+            {value.scheduledTimes.length === 1 ? 'horário/dia' : 'horários/dia'}
+            : {value.scheduledTimes.join(' • ')}).
           </Text>
         )}
       </View>

@@ -135,9 +135,7 @@ export async function scheduleCycleNotifications(
         scheduledIds.push(id);
       }
 
-      if (scheduledIds.length > 0) {
-        return scheduledIds;
-      }
+      return scheduledIds;
     }
 
     // 2. Fallback / Recorrência diária vinculada ao canal de prioridade máxima
