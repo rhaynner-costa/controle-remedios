@@ -58,7 +58,11 @@ export default function ProfileScreen() {
       await saveUserProfile({ name, birthDate, healthNotes });
       Alert.alert('Sucesso', 'Cadastro atualizado com sucesso.');
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar os dados.');
+      const msg =
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível salvar os dados.';
+      Alert.alert('Erro', msg);
     } finally {
       setSaving(false);
     }

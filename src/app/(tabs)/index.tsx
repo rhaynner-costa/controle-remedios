@@ -33,6 +33,7 @@ import {
 import { getUserProfile } from '@/services/userService';
 import {
   buildScheduledIso,
+  extractIsoDatePart,
   formatDateDisplay,
   formatTimeDisplay,
   getLocalDateString,
@@ -92,6 +93,14 @@ export default function TodayScreen() {
   };
 
   const handleOpenDoseModal = (item: DailyDoseItem) => {
+    if (extractIsoDatePart(item.doseLog.scheduledAt) > getLocalDateString()) {
+      Alert.alert(
+        'Agendamento Futuro',
+        'Não é possível marcar como tomado um medicamento agendado para uma data futura.'
+      );
+      return;
+    }
+
     setActiveItem(item);
     if (item.doseLog.status === 'tomado' && item.doseLog.takenAt) {
       const brDate = formatDateDisplay(item.doseLog.takenAt);
